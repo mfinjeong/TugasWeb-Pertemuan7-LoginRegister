@@ -24,7 +24,7 @@
     const h = String(now.getHours()).padStart(2, '0');
     const m = String(now.getMinutes()).padStart(2, '0');
     const s = String(now.getSeconds()).padStart(2, '0');
-    clockEl.textContent = `${h}:${m}:${s}`;
+    if (clockEl) clockEl.textContent = `${h}:${m}:${s}`;
   }
   updateClock();
   setInterval(updateClock, 1000);
@@ -38,11 +38,12 @@
     }
     return id;
   }
-  sessionIdEl.textContent = generateSessionId();
+  if (sessionIdEl) sessionIdEl.textContent = generateSessionId();
 
   // ── DATA STREAM ANIMATION ──
   const streamChars = '01█▓░▒▐▌├┤┬┴╫╬═║';
   function updateDataStream() {
+    if (!dataStreamEl) return;
     let stream = '';
     const len = Math.min(Math.floor(window.innerWidth / 12), 60);
     for (let i = 0; i < len; i++) {
@@ -63,34 +64,35 @@
     currentTab = tab;
 
     // Update tabs
-    tabLogin.classList.toggle('active', tab === 'login');
-    tabRegister.classList.toggle('active', tab === 'register');
+    if (tabLogin) tabLogin.classList.toggle('active', tab === 'login');
+    if (tabRegister) tabRegister.classList.toggle('active', tab === 'register');
 
     // Move indicator
-    tabIndicator.style.transform = tab === 'register' ? 'translateX(100%)' : 'translateX(0)';
+    if (tabIndicator) {
+      tabIndicator.style.transform = tab === 'register' ? 'translateX(100%)' : 'translateX(0)';
+    }
 
     // Switch forms with animation
     const showForm = tab === 'login' ? loginForm : registerForm;
     const hideForm = tab === 'login' ? registerForm : loginForm;
 
-    hideForm.classList.remove('active');
-    showForm.classList.remove('active');
-
-    // Force reflow for animation restart
-    void showForm.offsetWidth;
-
-    showForm.style.animation = tab === 'login' ? 'formSlideInReverse 200ms ease-out' : 'formSlideIn 200ms ease-out';
-    showForm.classList.add('active');
+    if (hideForm) hideForm.classList.remove('active');
+    if (showForm) {
+      showForm.classList.remove('active');
+      void showForm.offsetWidth; // Force reflow
+      showForm.style.animation = tab === 'login' ? 'formSlideInReverse 200ms ease-out' : 'formSlideIn 200ms ease-out';
+      showForm.classList.add('active');
+    }
 
     // Clear alerts
-    loginAlert.innerHTML = '';
-    registerAlert.innerHTML = '';
+    if (loginAlert) loginAlert.innerHTML = '';
+    if (registerAlert) registerAlert.innerHTML = '';
   }
 
-  tabLogin.addEventListener('click', () => switchTab('login'));
-  tabRegister.addEventListener('click', () => switchTab('register'));
-  switchToRegister.addEventListener('click', () => switchTab('register'));
-  switchToLogin.addEventListener('click', () => switchTab('login'));
+  if (tabLogin) tabLogin.addEventListener('click', () => switchTab('login'));
+  if (tabRegister) tabRegister.addEventListener('click', () => switchTab('register'));
+  if (switchToRegister) switchToRegister.addEventListener('click', () => switchTab('register'));
+  if (switchToLogin) switchToLogin.addEventListener('click', () => switchTab('login'));
 
   // ═══════════════════════════════════════════
   // PASSWORD TOGGLE
@@ -104,12 +106,12 @@
 
       if (input.type === 'password') {
         input.type = 'text';
-        eyeOpen.classList.add('hidden');
-        eyeClosed.classList.remove('hidden');
+        if (eyeOpen) eyeOpen.classList.add('hidden');
+        if (eyeClosed) eyeClosed.classList.remove('hidden');
       } else {
         input.type = 'password';
-        eyeOpen.classList.remove('hidden');
-        eyeClosed.classList.add('hidden');
+        if (eyeOpen) eyeOpen.classList.remove('hidden');
+        if (eyeClosed) eyeClosed.classList.add('hidden');
       }
     });
   });
@@ -134,35 +136,39 @@
   const strengthLabels = ['', 'WEAK', 'FAIR', 'GOOD', 'STRONG'];
   const strengthClasses = ['', 'weak', 'fair', 'good', 'strong'];
 
-  regPassword.addEventListener('input', () => {
-    const val = regPassword.value;
-    const score = val.length === 0 ? 0 : checkPasswordStrength(val);
+  if (regPassword) {
+    regPassword.addEventListener('input', () => {
+      const val = regPassword.value;
+      const score = val.length === 0 ? 0 : checkPasswordStrength(val);
 
-    strengthBars.forEach((bar, i) => {
-      bar.className = 'strength-bar';
-      if (i < score) {
-        bar.classList.add('active', strengthClasses[score]);
+      strengthBars.forEach((bar, i) => {
+        bar.className = 'strength-bar';
+        if (i < score) {
+          bar.classList.add('active', strengthClasses[score]);
+        }
+      });
+
+      if (strengthText) {
+        strengthText.textContent = score === 0 ? '—' : strengthLabels[score];
+        strengthText.style.color = score === 0 ? '' :
+          score === 1 ? 'var(--red)' :
+            score === 2 ? 'var(--amber)' :
+              score === 3 ? 'var(--cyan)' : 'var(--emerald)';
       }
     });
-
-    strengthText.textContent = score === 0 ? '—' : strengthLabels[score];
-    strengthText.style.color = score === 0 ? '' :
-      score === 1 ? 'var(--red)' :
-        score === 2 ? 'var(--amber)' :
-          score === 3 ? 'var(--cyan)' : 'var(--emerald)';
-  });
+  }
 
   // ═══════════════════════════════════════════
   // ALERT SYSTEM
   // ═══════════════════════════════════════════
   function showAlert(container, type, message) {
+    if (!container) return;
     const iconSvg = type === 'error'
       ? '<svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>'
       : '<svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
 
     container.innerHTML = `<div class="alert-msg ${type}">${iconSvg}<span>${message}</span></div>`;
 
-    // Auto-clear after 5 seconds
     setTimeout(() => {
       const alert = container.querySelector('.alert-msg');
       if (alert) {
@@ -174,138 +180,134 @@
     }, 5000);
   }
 
-  // ═══════════════════════════════════════════
-  // FORM VALIDATION & SUBMISSION
-  // ═══════════════════════════════════════════
-
-  // Simple in-memory user store (for demo; replace with PHP backend)
-  let users = JSON.parse(localStorage.getItem('nexus_users') || '[]');
-
-  function saveUsers() {
-    localStorage.setItem('nexus_users', JSON.stringify(users));
-  }
-
-  function sanitize(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
   function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
-  // ── LOGIN ──
-  loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
+  // ═══════════════════════════════════════════
+  // FORM SUBMISSION (CONNECTED TO API.PHP)
+  // ═══════════════════════════════════════════
 
-    const email = sanitize($('#loginEmail').value.trim());
-    const password = $('#loginPassword').value;
-    const loginBtn = $('#loginBtn');
+  // ── LOGIN HANDLER ──
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
 
-    if (!email || !password) {
-      showAlert(loginAlert, 'error', 'All fields are required.');
-      return;
-    }
+      const email = $('#loginEmail').value.trim();
+      const password = $('#loginPassword').value;
+      const rememberMe = $('#rememberMe')?.checked || false;
+      const loginBtn = $('#loginBtn');
 
-    if (!validateEmail(email)) {
-      showAlert(loginAlert, 'error', 'Invalid email format.');
-      return;
-    }
-
-    // Simulate loading
-    loginBtn.classList.add('loading');
-
-    setTimeout(() => {
-      loginBtn.classList.remove('loading');
-
-      const user = users.find((u) => u.email === email);
-      if (!user) {
-        showAlert(loginAlert, 'error', 'Agent not found in the system.');
+      if (!email || !password) {
+        showAlert(loginAlert, 'error', 'Semua field wajib diisi.');
         return;
       }
 
-      // Simple password check (in real app, use PHP password_verify)
-      if (user.password !== password) {
-        showAlert(loginAlert, 'error', 'Invalid credentials. Access denied.');
+      if (!validateEmail(email)) {
+        showAlert(loginAlert, 'error', 'Format email tidak valid.');
         return;
       }
 
-      showAlert(loginAlert, 'success', `Welcome back, Agent ${user.name}. System access granted.`);
+      if (loginBtn) loginBtn.classList.add('loading');
 
-      // Update avatar
-      document.querySelector('.avatar-label').textContent = user.name.toUpperCase();
-    }, 600);
-  });
+      fetch('api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', email, password, rememberMe })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (loginBtn) loginBtn.classList.remove('loading');
 
-  // ── REGISTER ──
-  registerForm.addEventListener('submit', (e) => {
-    e.preventDefault();
+        if (data.status === 'success') {
+          showAlert(loginAlert, 'success', data.message);
+          setTimeout(() => {
+            window.location.href = data.redirect || 'dashboard.php';
+          }, 1000);
+        } else {
+          showAlert(loginAlert, 'error', data.message);
+        }
+      })
+      .catch(() => {
+        if (loginBtn) loginBtn.classList.remove('loading');
+        showAlert(loginAlert, 'error', 'Koneksi ke server gagal.');
+      });
+    });
+  }
 
-    const name = sanitize($('#regName').value.trim());
-    const email = sanitize($('#regEmail').value.trim());
-    const password = $('#regPassword').value;
-    const confirmPassword = $('#regConfirmPassword').value;
-    const registerBtn = $('#registerBtn');
+  // ── REGISTER HANDLER ──
+  if (registerForm) {
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
 
-    if (!name || !email || !password || !confirmPassword) {
-      showAlert(registerAlert, 'error', 'All fields are required.');
-      return;
-    }
+      const name = $('#regName').value.trim();
+      const email = $('#regEmail').value.trim();
+      const password = $('#regPassword').value;
+      const confirmPassword = $('#regConfirmPassword').value;
+      const registerBtn = $('#registerBtn');
 
-    if (name.length < 3) {
-      showAlert(registerAlert, 'error', 'Agent name must be at least 3 characters.');
-      return;
-    }
+      if (!name || !email || !password || !confirmPassword) {
+        showAlert(registerAlert, 'error', 'Semua field wajib diisi.');
+        return;
+      }
 
-    if (!validateEmail(email)) {
-      showAlert(registerAlert, 'error', 'Invalid email format. Use valid address.');
-      return;
-    }
+      if (name.length < 3) {
+        showAlert(registerAlert, 'error', 'Nama minimal 3 karakter.');
+        return;
+      }
 
-    if (password.length < 6) {
-      showAlert(registerAlert, 'error', 'Password must be at least 6 characters.');
-      return;
-    }
+      if (!validateEmail(email)) {
+        showAlert(registerAlert, 'error', 'Format email tidak valid.');
+        return;
+      }
 
-    if (password !== confirmPassword) {
-      showAlert(registerAlert, 'error', 'Passwords do not match.');
-      return;
-    }
+      if (password.length < 6) {
+        showAlert(registerAlert, 'error', 'Password minimal 6 karakter.');
+        return;
+      }
 
-    // Check duplicate
-    if (users.find((u) => u.email === email)) {
-      showAlert(registerAlert, 'error', 'Email already registered in the system.');
-      return;
-    }
+      if (password !== confirmPassword) {
+        showAlert(registerAlert, 'error', 'Konfirmasi password tidak cocok.');
+        return;
+      }
 
-    // Simulate loading
-    registerBtn.classList.add('loading');
+      if (registerBtn) registerBtn.classList.add('loading');
 
-    setTimeout(() => {
-      registerBtn.classList.remove('loading');
+      fetch('api.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'register', name, email, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (registerBtn) registerBtn.classList.remove('loading');
 
-      users.push({ name, email, password });
-      saveUsers();
+        if (data.status === 'success') {
+          showAlert(registerAlert, 'success', data.message);
+          registerForm.reset();
+          
+          // Reset Strength Bars UI
+          strengthBars.forEach((bar) => { bar.className = 'strength-bar'; });
+          if (strengthText) {
+            strengthText.textContent = '—';
+            strengthText.style.color = '';
+          }
 
-      showAlert(registerAlert, 'success', `Agent ${name} registered successfully. Proceed to login.`);
-
-      // Clear form
-      registerForm.reset();
-      strengthBars.forEach((bar) => { bar.className = 'strength-bar'; });
-      strengthText.textContent = '—';
-      strengthText.style.color = '';
-
-      // Auto-switch to login after delay
-      setTimeout(() => switchTab('login'), 1500);
-    }, 800);
-  });
-
-  // Quest tracking removed — panel no longer in use
-
+          // Auto pindah ke tab login setelah registrasi sukses
+          setTimeout(() => switchTab('login'), 1500);
+        } else {
+          showAlert(registerAlert, 'error', data.message);
+        }
+      })
+      .catch(() => {
+        if (registerBtn) registerBtn.classList.remove('loading');
+        showAlert(registerAlert, 'error', 'Koneksi ke server gagal.');
+      });
+    });
+  }
 
   // ═══════════════════════════════════════════
-  // INPUT FOCUS SOUNDS (Visual feedback flash)
+  // INPUT FOCUS & BUTTON FEEDBACK
   // ═══════════════════════════════════════════
   $$('.hud-input').forEach((input) => {
     input.addEventListener('focus', () => {
@@ -317,43 +319,34 @@
     });
   });
 
-  // ═══════════════════════════════════════════
-  // BUTTON CLICK FEEDBACK
-  // ═══════════════════════════════════════════
   $$('.hud-btn').forEach((btn) => {
-    btn.addEventListener('mousedown', () => {
-      btn.style.transform = 'scale(0.96) skewX(-1deg)';
-    });
-    btn.addEventListener('mouseup', () => {
-      btn.style.transform = '';
-    });
-    btn.addEventListener('mouseleave', () => {
-      btn.style.transform = '';
-    });
+    btn.addEventListener('mousedown', () => { btn.style.transform = 'scale(0.96) skewX(-1deg)'; });
+    btn.addEventListener('mouseup', () => { btn.style.transform = ''; });
+    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
   });
 
   // ═══════════════════════════════════════════
-  // HEADER TYPING EFFECT ON LOAD
+  // HEADER TYPING EFFECT
   // ═══════════════════════════════════════════
   const statusLabel = document.querySelector('.status-label');
-  const originalText = statusLabel.textContent;
-  statusLabel.textContent = '';
-
-  let charIndex = 0;
-  function typeStatus() {
-    if (charIndex < originalText.length) {
-      statusLabel.textContent += originalText[charIndex];
-      charIndex++;
-      setTimeout(typeStatus, 50);
+  if (statusLabel) {
+    const originalText = statusLabel.textContent;
+    statusLabel.textContent = '';
+    let charIndex = 0;
+    function typeStatus() {
+      if (charIndex < originalText.length) {
+        statusLabel.textContent += originalText[charIndex];
+        charIndex++;
+        setTimeout(typeStatus, 50);
+      }
     }
+    setTimeout(typeStatus, 300);
   }
-  setTimeout(typeStatus, 300);
 
   // ═══════════════════════════════════════════
   // KEYBOARD SHORTCUTS
   // ═══════════════════════════════════════════
   document.addEventListener('keydown', (e) => {
-    // Ctrl+1 = Login tab, Ctrl+2 = Register tab
     if (e.ctrlKey && e.key === '1') {
       e.preventDefault();
       switchTab('login');
